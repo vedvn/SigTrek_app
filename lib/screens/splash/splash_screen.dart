@@ -5,9 +5,9 @@ import '../home/home_screen.dart';
 import '../onboarding/profile_setup_screen.dart';
 
 class SplashScreen extends StatelessWidget {
-  SplashScreen({super.key});
+  const SplashScreen({super.key});
 
-  final AuthService _authService = AuthService();
+  static final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
