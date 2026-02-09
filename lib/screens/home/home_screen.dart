@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../widgets/rounded_button.dart';
+import '../../core/widgets/primary_button.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
