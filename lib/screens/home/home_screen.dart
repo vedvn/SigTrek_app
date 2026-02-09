@@ -1,8 +1,49 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../core/widgets/primary_button.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../../services/ble_service.dart';
+import '../sos/sos_escalation_screen.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final BleService _bleService = BleService();
+  StreamSubscription? _sosSub;
+  bool _sosInProgress = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _sosSub = _bleService.listenForSos().listen((_) {
+      if (!mounted) return;
+      if (_sosInProgress) return;
+
+      _sosInProgress = true;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const SosEscalationScreen(
+            triggeredBy: 'bracelet',
+          ),
+        ),
+      ).then((_) {
+        _sosInProgress = false;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _sosSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,7 +51,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20), // ✅ EdgeInsets FIXED
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
               _header(),
@@ -52,7 +93,10 @@ class HomeScreen extends StatelessWidget {
       ),
       child: const Column(
         children: [
-          Text('Bracelet Status', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            'Bracelet Status',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           SizedBox(height: 8),
           Text('Connection: Not Connected'),
           Text('Battery: --'),
@@ -64,7 +108,14 @@ class HomeScreen extends StatelessWidget {
   Widget _sosButton(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/sos-active');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const SosEscalationScreen(
+              triggeredBy: 'mobile',
+            ),
+          ),
+        );
       },
       child: Container(
         width: 220,
@@ -76,7 +127,10 @@ class HomeScreen extends StatelessWidget {
         alignment: Alignment.center,
         child: const Text(
           'SOS',
-          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

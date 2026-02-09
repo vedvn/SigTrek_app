@@ -6,7 +6,12 @@ import '../../services/sos_service.dart';
 import 'sos_active_screen.dart';
 
 class SosEscalationScreen extends StatefulWidget {
-  const SosEscalationScreen({super.key});
+  final String triggeredBy; // 'mobile' or 'bracelet'
+
+  const SosEscalationScreen({
+    super.key,
+    required this.triggeredBy,
+  });
 
   @override
   State<SosEscalationScreen> createState() => _SosEscalationScreenState();
@@ -27,12 +32,14 @@ class _SosEscalationScreenState extends State<SosEscalationScreen> {
       if (_seconds == 0) {
         timer.cancel();
 
-        // ✅ Activate SOS in Firestore
-        final sosId = await SOSService.activateSOS();
+        final sosId = await SOSService.activateSOS(
+          triggeredBy: widget.triggeredBy,
+          locationSource:
+              widget.triggeredBy == 'bracelet' ? 'bracelet' : 'mobile',
+        );
 
         if (!mounted) return;
 
-        // ✅ Go to active SOS screen with sosId
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

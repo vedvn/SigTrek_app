@@ -8,16 +8,21 @@ class SOSService {
       _firestore.collection('users').doc(uid).collection('sos');
 
   /// Called AFTER 8s escalation
-  static Future<String> activateSOS() async {
+  static Future<String> activateSOS({
+    required String triggeredBy,
+    required String locationSource,
+  }) async {
     final user = FirebaseAuth.instance.currentUser!;
     final doc = await _sosRef(user.uid).add({
-      'status': 'active',
+     'status': 'active',
+      'triggeredBy': triggeredBy,
+      'locationSource': locationSource,
       'startedAt': DateTime.now().toIso8601String(),
-      'lastLocation': null,
     });
 
     return doc.id;
   }
+
 
   static Future<void> stopSOS({
     required String uid,

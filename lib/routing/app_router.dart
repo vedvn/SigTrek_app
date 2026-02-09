@@ -7,7 +7,6 @@ import '../screens/onboarding/profile_setup_screen.dart';
 import '../screens/onboarding/emergency_contact_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/ble/ble_paired_screen.dart';
-import '../screens/sos/sos_escalation_screen.dart';
 import '../screens/sos/sos_active_screen.dart';
 
 class AppRouter {
@@ -18,7 +17,6 @@ class AppRouter {
   static const emergencyContact = '/emergency-contact';
   static const home = '/home';
   static const blePaired = '/ble-paired';
-  static const sosEscalation = '/sos-escalation';
   static const sosActive = '/sos-active';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -34,21 +32,19 @@ class AppRouter {
 
       case profileSetup:
         return MaterialPageRoute(
-            builder: (_) => const ProfileSetupScreen());
+          builder: (_) => const ProfileSetupScreen(),
+        );
 
       case emergencyContact:
         return MaterialPageRoute(
-            builder: (_) => const EmergencyContactScreen());
+          builder: (_) => const EmergencyContactScreen(),
+        );
 
       case home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
 
       case blePaired:
         return MaterialPageRoute(builder: (_) => const BlePairedScreen());
-
-      case sosEscalation:
-        return MaterialPageRoute(
-            builder: (_) => const SosEscalationScreen());
 
       case sosActive:
         final sosId = settings.arguments as String;
