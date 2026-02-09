@@ -25,22 +25,37 @@ class AppRouter {
     switch (settings.name) {
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
+
       case register:
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
+
       case profileSetup:
-        return MaterialPageRoute(builder: (_) => const ProfileSetupScreen());
+        return MaterialPageRoute(
+            builder: (_) => const ProfileSetupScreen());
+
       case emergencyContact:
-        return MaterialPageRoute(builder: (_) => const EmergencyContactScreen());
+        return MaterialPageRoute(
+            builder: (_) => const EmergencyContactScreen());
+
       case home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
+
       case blePaired:
         return MaterialPageRoute(builder: (_) => const BlePairedScreen());
+
       case sosEscalation:
-        return MaterialPageRoute(builder: (_) => const SosEscalationScreen());
+        return MaterialPageRoute(
+            builder: (_) => const SosEscalationScreen());
+
       case sosActive:
-        return MaterialPageRoute(builder: (_) => const SosActiveScreen());
+        final sosId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => SOSActiveScreen(sosId: sosId),
+        );
+
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

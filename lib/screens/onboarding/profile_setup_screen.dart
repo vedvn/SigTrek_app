@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../core/widgets/primary_button.dart';
+import '../../services/profile_service.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -13,9 +16,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      // TODO: Save profile to Firestore via ProfileService
+  final ProfileService _profileService = ProfileService();
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await _profileService.markProfileComplete(
+      uid: user.uid,
+      name: _nameController.text.trim(),
+    );
+
+    // Move to emergency contact setup
+    if (mounted) {
       Navigator.pushReplacementNamed(context, '/emergency-contact');
     }
   }

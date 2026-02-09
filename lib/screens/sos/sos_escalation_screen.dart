@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 
+import '../../services/sos_service.dart';
+import 'sos_active_screen.dart';
+
 class SosEscalationScreen extends StatefulWidget {
   const SosEscalationScreen({super.key});
 
@@ -23,7 +26,19 @@ class _SosEscalationScreenState extends State<SosEscalationScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (_seconds == 0) {
         timer.cancel();
-        Navigator.pushReplacementNamed(context, '/sos-active');
+
+        // ✅ Activate SOS in Firestore
+        final sosId = await SOSService.activateSOS();
+
+        if (!mounted) return;
+
+        // ✅ Go to active SOS screen with sosId
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SOSActiveScreen(sosId: sosId),
+          ),
+        );
         return;
       }
 
