@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "362940386764",
+    "project_id": "sigtrek-f78c9",
+    "storage_bucket": "sigtrek-f78c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362940386764:android:7fafc177a7c606bde32169",
+        "android_client_info": {
+          "package_name": "com.example.sigtrek2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "362940386764-2tfd8d0qetkd00998nrcr3vt2p7mi01b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv7vLYJhAT3y0xFTRirmvEXaKqty5shqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "362940386764-2tfd8d0qetkd00998nrcr3vt2p7mi01b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
