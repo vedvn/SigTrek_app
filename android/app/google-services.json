@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "362940386764-3alelrdp9pqaeq73105frd76fs5js4id.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sigtrek2",
+            "certificate_hash": "e470a1b494dc8e2c2c419a14c54101320723f533"
+          }
+        },
+        {
           "client_id": "362940386764-2tfd8d0qetkd00998nrcr3vt2p7mi01b.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "362940386764-2tfd8d0qetkd00998nrcr3vt2p7mi01b.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "362940386764-tdcqv2ehdpgu9lc08jal7duhj1p49695.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sigtrek2"
+              }
             }
           ]
         }
