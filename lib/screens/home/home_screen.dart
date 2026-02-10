@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../services/ble_service.dart';
 import '../../services/auth_service.dart';
@@ -18,18 +19,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
   StreamSubscription? _sosSub;
   Timer? _bleRetryTimer;
+
   bool _sosInProgress = false;
+  bool _permissionsRequested = false;
 
   @override
   void initState() {
     super.initState();
+
+    // Request permissions immediately after login
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestBlePermissions();
+    });
+
     _startBleFailSafeListener();
+  }
+
+  /* ================= PERMISSIONS ================= */
+
+  Future<void> _requestBlePermissions() async {
+    if (_permissionsRequested) return;
+    _permissionsRequested = true;
+
+    final scan = await Permission.bluetoothScan.request();
+    final connect = await Permission.bluetoothConnect.request();
+    final location = await Permission.locationWhenInUse.request();
+
+    if (scan.isDenied || connect.isDenied || location.isDenied) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Bluetooth & location permissions are required for bracelet SOS.',
+          ),
+        ),
+      );
+    }
   }
 
   /* ================= BLE FAIL‑SAFE ================= */
 
   void _startBleFailSafeListener() {
-    // Retry periodically until SOS is ready
     _bleRetryTimer = Timer.periodic(
       const Duration(seconds: 2),
       (_) {
@@ -91,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (shouldLogout == true) {
       await _authService.signOut();
-      // SplashScreen reacts automatically
+      // SplashScreen reacts automatically via authStateChanges
     }
   }
 
@@ -113,7 +143,6 @@ class _HomeScreenState extends State<HomeScreen> {
               _sosButton(context),
               const SizedBox(height: 20),
 
-              // Logout
               TextButton(
                 onPressed: _confirmLogout,
                 child: const Text(

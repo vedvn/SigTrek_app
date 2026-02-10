@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'routing/app_router.dart';
+import 'services/foreground_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ Firebase init (async)
   await Firebase.initializeApp();
+
+  // ✅ Foreground service init (SYNC — do NOT await)
+  SosForegroundService.init();
 
   runApp(const MyApp());
 }

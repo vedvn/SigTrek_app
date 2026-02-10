@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../services/sos_service.dart';
+import '../../services/foreground_service.dart'; // ✅ NEW
 import 'sos_active_screen.dart';
 
 class SosEscalationScreen extends StatefulWidget {
@@ -24,6 +25,10 @@ class _SosEscalationScreenState extends State<SosEscalationScreen> {
   @override
   void initState() {
     super.initState();
+
+    // 🔔 Start foreground service so countdown survives background / lock
+    SosForegroundService.start();
+
     _startCountdown();
   }
 
@@ -31,6 +36,9 @@ class _SosEscalationScreenState extends State<SosEscalationScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (_seconds == 0) {
         timer.cancel();
+
+        // 🛑 Stop foreground service before activating SOS
+        await SosForegroundService.stop();
 
         final sosId = await SOSService.activateSOS(
           triggeredBy: widget.triggeredBy,
@@ -53,18 +61,30 @@ class _SosEscalationScreenState extends State<SosEscalationScreen> {
         Vibration.vibrate(duration: 500);
       }
 
-      setState(() => _seconds--);
+      if (mounted) {
+        setState(() => _seconds--);
+      }
     });
   }
 
-  void _cancelSOS() {
+  void _cancelSOS() async {
     _timer?.cancel();
-    Navigator.pop(context);
+
+    // 🛑 Stop foreground service when user cancels
+    await SosForegroundService.stop();
+
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+
+    // 🛑 Safety stop (in case Android kills widget unexpectedly)
+    SosForegroundService.stop();
+
     super.dispose();
   }
 

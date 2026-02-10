@@ -5,20 +5,15 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
-rootProject.layout.buildDirectory.value(newBuildDir)
+// ❌ Do NOT override build directories (Flutter requires defaults)
+// ❌ Do NOT relocate build outputs
 
 subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
-}
-subprojects {
-    project.evaluationDependsOn(":app")
+    // Ensures :app is evaluated first (safe & minimal)
+    evaluationDependsOn(":app")
 }
 
+// Standard clean task (Flutter-compatible)
 tasks.register<Delete>("clean") {
-    delete(rootProject.layout.buildDirectory)
+    delete(rootProject.buildDir)
 }
