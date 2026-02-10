@@ -19,7 +19,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final ProfileService _profileService = ProfileService();
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    final form = _formKey.currentState;
+    if (form == null) return;
+
+    if (!form.validate()) return;
 
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -29,10 +32,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       name: _nameController.text.trim(),
     );
 
-    // Move to emergency contact setup
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/emergency-contact');
-    }
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(context, '/emergency-contact');
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
   }
 
   @override

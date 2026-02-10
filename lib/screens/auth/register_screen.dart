@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../services/auth_service.dart';
 import '../../core/widgets/primary_button.dart';
 
@@ -10,32 +11,59 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _authService = AuthService();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _loading = false;
 
   Future<void> _register() async {
+    if (_loading) return;
+
+    setState(() => _loading = true);
+
     try {
       await _authService.signUpWithEmail(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      // ✅ Do NOT navigate here
+      // SplashScreen will route based on auth state
     } catch (e) {
-      _showError(e);
+      _showError('Registration failed. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   Future<void> _googleSignup() async {
+    if (_loading) return;
+
+    setState(() => _loading = true);
+
     try {
       await _authService.signInWithGoogle();
+      // ✅ Same flow as login
     } catch (e) {
-      _showError(e);
+      _showError('Google sign-up failed. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
-  void _showError(Object e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(e.toString())));
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -49,6 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 12),
             TextField(
@@ -58,13 +87,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             const SizedBox(height: 24),
             PrimaryButton(
-              text: 'Create Account',
-              onPressed: _register,
+              text: _loading ? 'Please wait...' : 'Create Account',
+              onPressed: _loading ? null : _register,
             ),
             const SizedBox(height: 12),
             PrimaryButton(
-              text: 'Sign up with Google',
-              onPressed: _googleSignup,
+              text: _loading ? 'Please wait...' : 'Sign up with Google',
+              onPressed: _loading ? null : _googleSignup,
             ),
           ],
         ),

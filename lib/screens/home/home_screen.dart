@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../services/ble_service.dart';
+import '../../services/auth_service.dart';
 import '../sos/sos_escalation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,16 +14,37 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final BleService _bleService = BleService();
+  final AuthService _authService = AuthService();
+
   StreamSubscription? _sosSub;
+  Timer? _bleRetryTimer;
   bool _sosInProgress = false;
 
   @override
   void initState() {
     super.initState();
+    _startBleFailSafeListener();
+  }
 
+  /* ================= BLE FAIL‑SAFE ================= */
+
+  void _startBleFailSafeListener() {
+    // Retry periodically until SOS is ready
+    _bleRetryTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) {
+        if (!mounted) return;
+
+        if (_bleService.isSosReady && _sosSub == null) {
+          _startListeningForBraceletSos();
+        }
+      },
+    );
+  }
+
+  void _startListeningForBraceletSos() {
     _sosSub = _bleService.listenForSos().listen((_) {
-      if (!mounted) return;
-      if (_sosInProgress) return;
+      if (!mounted || _sosInProgress) return;
 
       _sosInProgress = true;
 
@@ -42,8 +64,38 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _sosSub?.cancel();
+    _bleRetryTimer?.cancel();
     super.dispose();
   }
+
+  /* ================= LOGOUT ================= */
+
+  Future<void> _confirmLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await _authService.signOut();
+      // SplashScreen reacts automatically
+    }
+  }
+
+  /* ================= UI ================= */
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +111,16 @@ class _HomeScreenState extends State<HomeScreen> {
               _braceletStatus(),
               const Spacer(),
               _sosButton(context),
+              const SizedBox(height: 20),
+
+              // Logout
+              TextButton(
+                onPressed: _confirmLogout,
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
             ],
           ),
         ),
@@ -85,21 +147,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _braceletStatus() {
+    final ready = _bleService.isSosReady;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Text(
+          const Text(
             'Bracelet Status',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 8),
-          Text('Connection: Not Connected'),
-          Text('Battery: --'),
+          const SizedBox(height: 8),
+          Text(
+            'Connection: ${ready ? 'Connected' : 'Not Connected'}',
+          ),
+          const Text('Battery: --'),
         ],
       ),
     );

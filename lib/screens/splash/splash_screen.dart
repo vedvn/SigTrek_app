@@ -21,11 +21,12 @@ class SplashScreen extends StatelessWidget {
           );
         }
 
-        if (!snapshot.hasData) {
+        final user = snapshot.data;
+        if (user == null) {
           return const LoginScreen();
         }
 
-        return _PostAuthRouter(user: snapshot.data!);
+        return _PostAuthRouter(user: user);
       },
     );
   }
@@ -39,17 +40,21 @@ class _PostAuthRouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
+    return FutureBuilder<Map<String, dynamic>?>(
       future: _profileService.getProfileStatus(user.uid),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        final profileComplete = snapshot.data!['profileComplete'];
-        final contactsCount = snapshot.data!['emergencyContactsCount'];
+        final data = snapshot.data ?? {};
+
+        final bool profileComplete =
+            (data['profileComplete'] as bool?) ?? false;
+        final int contactsCount =
+            (data['emergencyContactsCount'] as int?) ?? 0;
 
         if (!profileComplete) {
           return const ProfileSetupScreen();

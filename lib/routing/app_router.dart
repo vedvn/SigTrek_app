@@ -47,9 +47,20 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const BlePairedScreen());
 
       case sosActive:
-        final sosId = settings.arguments as String;
+        final args = settings.arguments;
+
+        if (args == null || args is! String) {
+          return MaterialPageRoute(
+            builder: (_) => const Scaffold(
+              body: Center(
+                child: Text('Invalid or missing SOS ID'),
+              ),
+            ),
+          );
+        }
+
         return MaterialPageRoute(
-          builder: (_) => SOSActiveScreen(sosId: sosId),
+          builder: (_) => SOSActiveScreen(sosId: args),
         );
 
       default:
