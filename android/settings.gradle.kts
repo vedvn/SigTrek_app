@@ -17,13 +17,23 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
 
-    // ✅ Flutter-compatible ONLY
+    // Android Gradle Plugin (keep compatible versions)
     id("com.android.application") version "8.6.1" apply false
     id("com.android.library") version "8.3.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+
+    // REQUIRED by latest Flutter + plugins
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
 
     id("com.google.gms.google-services") version "4.3.15" apply false
 }

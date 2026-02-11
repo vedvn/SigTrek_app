@@ -1,19 +1,12 @@
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+// ⚠️ Do NOT declare repositories here
+// ⚠️ Do NOT use buildscript {} block (handled in settings.gradle.kts)
 
-// ❌ Do NOT override build directories (Flutter requires defaults)
-// ❌ Do NOT relocate build outputs
-
+// Ensures :app is evaluated first
 subprojects {
-    // Ensures :app is evaluated first (safe & minimal)
     evaluationDependsOn(":app")
 }
 
-// Standard clean task (Flutter-compatible)
+// Standard clean task
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
 }
