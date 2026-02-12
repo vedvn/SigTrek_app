@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../services/ble_service.dart';
 import '../../services/auth_service.dart';
 import '../sos/sos_escalation_screen.dart';
+import '../ble/ble_paired_screen.dart'; // ✅ ADD THIS
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,7 +28,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    // Request permissions immediately after login
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestBlePermissions();
     });
@@ -45,8 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final connect = await Permission.bluetoothConnect.request();
     final location = await Permission.locationWhenInUse.request();
 
+    if (!mounted) return;
+
     if (scan.isDenied || connect.isDenied || location.isDenied) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -76,18 +77,24 @@ class _HomeScreenState extends State<HomeScreen> {
     _sosSub = _bleService.listenForSos().listen((_) {
       if (!mounted || _sosInProgress) return;
 
-      _sosInProgress = true;
+      _navigateToSos('bracelet');
+    });
+  }
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const SosEscalationScreen(
-            triggeredBy: 'bracelet',
-          ),
+  void _navigateToSos(String triggeredBy) {
+    if (_sosInProgress) return;
+
+    _sosInProgress = true;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SosEscalationScreen(
+          triggeredBy: triggeredBy,
         ),
-      ).then((_) {
-        _sosInProgress = false;
-      });
+      ),
+    ).then((_) {
+      _sosInProgress = false;
     });
   }
 
@@ -121,7 +128,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (shouldLogout == true) {
       await _authService.signOut();
-      // SplashScreen reacts automatically via authStateChanges
     }
   }
 
@@ -140,9 +146,8 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 40),
               _braceletStatus(),
               const Spacer(),
-              _sosButton(context),
+              _sosButton(),
               const SizedBox(height: 20),
-
               TextButton(
                 onPressed: _confirmLogout,
                 child: const Text(
@@ -157,6 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /* ================= HEADER ================= */
+
   Widget _header() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -167,13 +174,27 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
-          Text('SIGTREK', style: TextStyle(fontSize: 18)),
-          Icon(Icons.bluetooth),
+        children: [
+          const Text('SIGTREK', style: TextStyle(fontSize: 18)),
+
+          // ✅ Bluetooth icon now clickable
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const BlePairedScreen(),
+                ),
+              );
+            },
+            child: const Icon(Icons.bluetooth),
+          ),
         ],
       ),
     );
   }
+
+  /* ================= STATUS ================= */
 
   Widget _braceletStatus() {
     final ready = _bleService.isSosReady;
@@ -200,17 +221,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _sosButton(BuildContext context) {
+  /* ================= SOS BUTTON ================= */
+
+  Widget _sosButton() {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const SosEscalationScreen(
-              triggeredBy: 'mobile',
-            ),
-          ),
-        );
+        _navigateToSos('mobile');
       },
       child: Container(
         width: 220,
