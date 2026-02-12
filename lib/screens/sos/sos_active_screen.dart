@@ -20,7 +20,9 @@ class SOSActiveScreen extends StatefulWidget {
 
 class _SOSActiveScreenState extends State<SOSActiveScreen> {
   StreamSubscription<Position>? _positionSub;
-  final _uid = FirebaseAuth.instance.currentUser!.uid;
+  final String _uid = FirebaseAuth.instance.currentUser!.uid;
+
+  DateTime? _lastSentTime;
 
   @override
   void initState() {
@@ -29,17 +31,29 @@ class _SOSActiveScreenState extends State<SOSActiveScreen> {
   }
 
   Future<void> _startTracking() async {
-    await LocationService.ensurePermission();
+    try {
+      await LocationService.ensurePermission();
 
-    _positionSub =
-        LocationService.positionStream().listen((position) {
-      SOSService.updateLocation(
-        uid: _uid,
-        sosId: widget.sosId,
-        lat: position.latitude,
-        lng: position.longitude,
-      );
-    });
+      _positionSub =
+          LocationService.positionStream().listen((position) async {
+        final now = DateTime.now();
+
+        // ✅ Only update every 5 seconds
+        if (_lastSentTime == null ||
+            now.difference(_lastSentTime!) >= const Duration(seconds: 5)) {
+          _lastSentTime = now;
+
+          await SOSService.updateLocation(
+            uid: _uid,
+            sosId: widget.sosId,
+            lat: position.latitude,
+            lng: position.longitude,
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint("Location tracking error: $e");
+    }
   }
 
   Future<void> _stopSOS() async {
@@ -76,7 +90,7 @@ class _SOSActiveScreenState extends State<SOSActiveScreen> {
             const Icon(Icons.warning, color: Colors.white, size: 80),
             const SizedBox(height: 20),
             const Text(
-              'Live location sharing',
+              'Sharing Live location',
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             const SizedBox(height: 40),

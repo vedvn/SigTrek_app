@@ -19,11 +19,15 @@ class LocationService {
   }
 
   static Stream<Position> positionStream() {
+    final androidSettings = AndroidSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 0,
+      intervalDuration: const Duration(seconds: 5),
+      forceLocationManager: false,
+    );
+
     return Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // meters
-      ),
+      locationSettings: androidSettings,
     );
   }
 }
